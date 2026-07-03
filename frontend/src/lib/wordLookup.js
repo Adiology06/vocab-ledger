@@ -1,3 +1,4 @@
+import { getCachedWord, setCachedWord } from "./wordCacheService"
 const DICT_API = "https://api.dictionaryapi.dev/api/v2/entries/en/"
 const DATAMUSE_API = "https://api.datamuse.com/words?"
 const TRANSLATE_API = "https://api.mymemory.translated.net/get?"
@@ -142,6 +143,9 @@ export async function lookupWord(rawWord, level = 'Beginner') {
   const word = rawWord.trim().toLowerCase()
   if (!word) return null
 
+  const cached = await getCachedWord(word)
+  if (cached) return { ...cached, fromCache: true }
+
   const [dictJson, hindi, dmSyn, dmAnt, dmSuggest] = await Promise.all([
     fetch(DICT_API + encodeURIComponent(word)).then(r => r.ok ? r.json() : null).catch(() => null),
     fetchHindiMeaning(word),
@@ -174,7 +178,7 @@ export async function lookupWord(rawWord, level = 'Beginner') {
   const ipa = phoneticObj?.text || ""
   const { prefix, prefixMeaning, suffix, suffixMeaning, approxRoot } = getAffixInfo(word)
 
-  return {
+  const result = {
     word,
     pos: chosen?.pos || "",
     definition: chosen?.definition || "",
@@ -187,4 +191,7 @@ export async function lookupWord(rawWord, level = 'Beginner') {
     antonyms,
     suggestions: dmSuggest.slice(0, 8)
   }
+  setCachedWord(word, result) // fire-and-forget, don't block the response
+  return result
+
 }

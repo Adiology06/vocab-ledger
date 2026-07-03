@@ -8,6 +8,8 @@ import { lookupWord } from "./lib/wordLookup";
 import QuizMode from "./components/QuizMode";
 import { getDueWords } from "./lib/reviewService";
 import ExamQuiz from "./components/ExamQuiz";
+import ResetPassword from "./ResetPassword";
+import { printRevisionSheet } from "./lib/printService";
 import DiscoverMode from "./components/DiscoverMode";
 import { exportWordsToCSV } from "./lib/exportService";
 import {
@@ -28,6 +30,7 @@ function App() {
   const [level, setLevel] = useState("Beginner");
   const [dueWords, setDueWords] = useState([]);
   const [quizActive, setQuizActive] = useState(false);
+  const [passwordRecovery, setPasswordRecovery] = useState(false);
   const [quizSummary, setQuizSummary] = useState(null);
   const [discoverActive, setDiscoverActive] = useState(false);
   const [practiceActive, setPracticeActive] = useState(false);
@@ -43,8 +46,11 @@ function App() {
       setSession(session);
       setLoadingSession(false);
     });
-    const { data: listener } = supabase.auth.onAuthStateChange((_e, session) =>
-      setSession(session),
+    const { data: listener } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setSession(session);
+        if (event === "PASSWORD_RECOVERY") setPasswordRecovery(true);
+      },
     );
     return () => listener.subscription.unsubscribe();
   }, []);
@@ -96,7 +102,13 @@ function App() {
       ...data,
       difficulty: level,
     });
-    setStatus(error ? `couldn't save — ${error.message}` : "found & saved");
+    setStatus(
+      error
+        ? `couldn't save — ${error.message}`
+        : data.fromCache
+          ? "found (cached) & saved"
+          : "found & saved",
+    );
     refreshSavedWords(session.user.id);
   };
 
@@ -118,6 +130,8 @@ function App() {
   if (loadingSession)
     return <p style={{ textAlign: "center", marginTop: 80 }}>Loading…</p>;
   if (!session) return <Auth />;
+  if (passwordRecovery)
+    return <ResetPassword onDone={() => setPasswordRecovery(false)} />;
 
   return (
     <div className="wrap">
@@ -201,15 +215,25 @@ function App() {
             {dueWords.length} word{dueWords.length === 1 ? "" : "s"} due for
             scheduled review today
           </span>
-          <button
-            className="start-review-btn"
-            onClick={() => {
-              setQuizActive(true);
-              setQuizSummary(null);
-            }}
-          >
-            Start Review
-          </button>
+          <div style={{ display: "flex", gap: 8 }}>
+            <button
+              className="export-btn"
+              onClick={() =>
+                printRevisionSheet(dueWords, "Today's Review Words")
+              }
+            >
+              🖨 Print
+            </button>
+            <button
+              className="start-review-btn"
+              onClick={() => {
+                setQuizActive(true);
+                setQuizSummary(null);
+              }}
+            >
+              Start Review
+            </button>
+          </div>
         </div>
       )}
       {quizSummary && (
@@ -233,12 +257,22 @@ function App() {
       <div className="section-title">
         Saved words <span className="hint">(tap to reopen, ✕ to delete)</span>
         {savedWords.length > 0 && (
-          <button
-            className="export-btn"
-            onClick={() => exportWordsToCSV(savedWords)}
-          >
-            ⇩ Export CSV
-          </button>
+          <>
+            <button
+              className="export-btn"
+              onClick={() => exportWordsToCSV(savedWords)}
+            >
+              ⇩ Export CSV
+            </button>
+            <button
+              className="export-btn"
+              onClick={() =>
+                printRevisionSheet(savedWords, "My Vocabulary Revision Sheet")
+              }
+            >
+              🖨 Print PDF
+            </button>
+          </>
         )}
       </div>
       <SavedList

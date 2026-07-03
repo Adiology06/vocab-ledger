@@ -2,7 +2,7 @@ import { useState } from "react";
 import { supabase } from "./supabaseClient";
 
 export default function Auth() {
-  const [isSignUp, setIsSignUp] = useState(true);
+  const [mode, setMode] = useState("signup"); // 'signup' | 'login' | 'forgot'
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
@@ -13,29 +13,43 @@ export default function Auth() {
     setLoading(true);
     setMessage("");
 
-    if (isSignUp) {
+    if (mode === "signup") {
       const { error } = await supabase.auth.signUp({ email, password });
-      if (error) setMessage(error.message);
-      else
-        setMessage(
-          "Check your email to confirm your account (or check Supabase Auth settings if you disabled confirmation).",
-        );
-    } else {
+      setMessage(
+        error
+          ? error.message
+          : "Check your email to confirm your account (or check Supabase Auth settings if you disabled confirmation).",
+      );
+    } else if (mode === "login") {
       const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
       if (error) setMessage(error.message);
-      // on success, App.jsx's session listener handles the redirect automatically
+    } else if (mode === "forgot") {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: window.location.origin,
+      });
+      setMessage(
+        error
+          ? error.message
+          : "Reset link sent — check your email and click the link to set a new password.",
+      );
     }
     setLoading(false);
+  };
+
+  const titles = {
+    signup: "Create account",
+    login: "Log in",
+    forgot: "Reset password",
   };
 
   return (
     <div
       style={{ maxWidth: 360, margin: "80px auto", fontFamily: "sans-serif" }}
     >
-      <h2>{isSignUp ? "Create account" : "Log in"}</h2>
+      <h2>{titles[mode]}</h2>
       <form
         onSubmit={handleSubmit}
         style={{ display: "flex", flexDirection: "column", gap: 10 }}
@@ -47,40 +61,89 @@ export default function Auth() {
           onChange={(e) => setEmail(e.target.value)}
           required
         />
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          minLength={6}
-        />
+        {mode !== "forgot" && (
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            minLength={6}
+          />
+        )}
         <button type="submit" disabled={loading}>
-          {loading ? "Please wait…" : isSignUp ? "Sign up" : "Log in"}
+          {loading
+            ? "Please wait…"
+            : mode === "signup"
+              ? "Sign up"
+              : mode === "login"
+                ? "Log in"
+                : "Send reset link"}
         </button>
       </form>
 
-      <p style={{ fontSize: 13, marginTop: 10 }}>
-        {isSignUp ? "Already have an account?" : "Don't have an account?"}{" "}
-        <button
-          type="button"
-          onClick={() => {
-            setIsSignUp(!isSignUp);
-            setMessage("");
-          }}
-          style={{
-            background: "none",
-            border: "none",
-            color: "blue",
-            cursor: "pointer",
-            padding: 0,
-          }}
-        >
-          {isSignUp ? "Log in" : "Sign up"}
-        </button>
-      </p>
+      <div
+        style={{
+          fontSize: 13,
+          marginTop: 10,
+          display: "flex",
+          flexDirection: "column",
+          gap: 4,
+        }}
+      >
+        {mode !== "login" && (
+          <button
+            type="button"
+            onClick={() => {
+              setMode("login");
+              setMessage("");
+            }}
+            style={linkStyle}
+          >
+            Already have an account? Log in
+          </button>
+        )}
+        {mode !== "signup" && (
+          <button
+            type="button"
+            onClick={() => {
+              setMode("signup");
+              setMessage("");
+            }}
+            style={linkStyle}
+          >
+            Don't have an account? Sign up
+          </button>
+        )}
+        {mode !== "forgot" && (
+          <button
+            type="button"
+            onClick={() => {
+              setMode("forgot");
+              setMessage("");
+            }}
+            style={linkStyle}
+          >
+            Forgot your password?
+          </button>
+        )}
+      </div>
 
-      {message && <p style={{ fontSize: 13, color: "#a5372b" }}>{message}</p>}
+      {message && (
+        <p style={{ fontSize: 13, color: "#a5372b", marginTop: 10 }}>
+          {message}
+        </p>
+      )}
     </div>
   );
 }
+
+const linkStyle = {
+  background: "none",
+  border: "none",
+  color: "blue",
+  cursor: "pointer",
+  padding: 0,
+  textAlign: "left",
+  fontSize: 13,
+};
