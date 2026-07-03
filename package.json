@@ -1,0 +1,11 @@
+{
+  "name": "vocab-ledger",
+  "private": true,
+  "version": "1.0.0",
+  "workspaces": [
+    "frontend"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace=frontend"
+  }
+}
