@@ -140,7 +140,10 @@ function App() {
           <h1>
             WordJar <span className="devanagari">शब्द-पत्रिका</span>
           </h1>
-          <p>Search. Save. Self Dictionary — Every word you meet, Test yourself later.</p>
+          <p>
+            Search. Save. Self Dictionary — Every word you meet, Test yourself
+            later.
+          </p>
         </div>
         <div className="header-right">
           <span className="stat-pill">
@@ -336,6 +339,20 @@ function App() {
           onFinish={() => setExamQuizActive(false)}
         />
       )}
+      <footer className="app-footer">
+        <span>© {new Date().getFullYear()} WordJar</span>
+        <span className="footer-divider">·</span>
+        <span>
+          Built by{" "}
+          <a
+            href="https://your-portfolio-url.com"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Your Name
+          </a>
+        </span>
+      </footer>
     </div>
   );
 }
