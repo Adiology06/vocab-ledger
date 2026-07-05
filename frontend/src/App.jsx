@@ -138,9 +138,9 @@ function App() {
       <header>
         <div className="title-block">
           <h1>
-            Vocabulary Ledger <span className="devanagari">शब्द-पत्रिका</span>
+            WordJar <span className="devanagari">शब्द-पत्रिका</span>
           </h1>
-          <p>Search. Save. Test yourself later.</p>
+          <p>Search. Save. Self Dictionary — Every word you meet, Test yourself later.</p>
         </div>
         <div className="header-right">
           <span className="stat-pill">
@@ -172,74 +172,90 @@ function App() {
       </div>
       <div className="status-line">{status && `> ${status}`}</div>
 
-      <div className="review-banner discover">
-        <span>Learn new exam vocabulary today</span>
-        <button
-          className="start-review-btn"
-          onClick={() => setDiscoverActive(true)}
-        >
-          Discover words
-        </button>
-      </div>
-
-      <div className="review-banner exam">
-        <span>
-          Exam prep quiz — category-based, not limited to your saved words
-        </span>
-        <button
-          className="start-review-btn"
-          onClick={() => setExamQuizActive(true)}
-        >
-          Exam Quiz
-        </button>
-      </div>
-
-      {savedWords.length > 0 && (
-        <div className="review-banner practice">
-          <span>Practice quiz — test yourself on any saved word, anytime</span>
+      <div className="action-grid">
+        <div className="action-card discover">
+          <div className="action-icon">📖</div>
+          <div className="action-title">Discover Words</div>
+          <div className="action-sub">Learn new exam vocabulary</div>
           <button
-            className="start-review-btn"
+            className="action-btn"
+            onClick={() => setDiscoverActive(true)}
+          >
+            Start
+          </button>
+        </div>
+
+        <div className="action-card exam">
+          <div className="action-icon">🎯</div>
+          <div className="action-title">Exam Quiz</div>
+          <div className="action-sub">
+            Category-based, not limited to saved words
+          </div>
+          <button
+            className="action-btn"
+            onClick={() => setExamQuizActive(true)}
+          >
+            Start
+          </button>
+        </div>
+
+        <div className="action-card practice">
+          <div className="action-icon">🔁</div>
+          <div className="action-title">Practice Quiz</div>
+          <div className="action-sub">Test any saved word, anytime</div>
+          <button
+            className="action-btn"
             onClick={() => {
               setPracticeActive(true);
               setQuizSummary(null);
             }}
           >
-            Practice Quiz
+            Start
           </button>
         </div>
-      )}
 
-      {dueWords.length > 0 && (
-        <div className="review-banner">
-          <span>
-            {dueWords.length} word{dueWords.length === 1 ? "" : "s"} due for
-            scheduled review today
-          </span>
-          <div style={{ display: "flex", gap: 8 }}>
+        <div className="action-card review">
+          <div className="action-icon">⏰</div>
+          <div className="action-title">Scheduled Review</div>
+          <div className="action-sub">
+            {dueWords.length > 0
+              ? `${dueWords.length} word${dueWords.length === 1 ? "" : "s"} due today`
+              : "Nothing due today"}
+          </div>
+          <div style={{ display: "flex", gap: 6 }}>
+            {dueWords.length > 0 && (
+              <button
+                className="action-btn secondary"
+                onClick={() =>
+                  printRevisionSheet(dueWords, "Today's Review Words")
+                }
+              >
+                Print
+              </button>
+            )}
             <button
-              className="export-btn"
-              onClick={() =>
-                printRevisionSheet(dueWords, "Today's Review Words")
-              }
-            >
-              🖨 Print
-            </button>
-            <button
-              className="start-review-btn"
+              className="action-btn"
+              disabled={!dueWords.length}
               onClick={() => {
                 setQuizActive(true);
                 setQuizSummary(null);
               }}
             >
-              Start Review
+              Start
             </button>
           </div>
         </div>
-      )}
+      </div>
       {quizSummary && (
-        <div className="review-banner done">
-          Review finished — {quizSummary.remembered} remembered,{" "}
-          {quizSummary.forgot} to revisit again.
+        <div
+          className="action-card review"
+          style={{ borderTopColor: "var(--green-stamp)", marginBottom: 20 }}
+        >
+          <div className="action-title">Quiz finished</div>
+          <div className="action-sub">
+            ✓ {quizSummary.correct ?? 0} correct · ✕ {quizSummary.wrong ?? 0}{" "}
+            wrong · ⤼ {quizSummary.skipped ?? 0} skipped
+          </div>
         </div>
       )}
 

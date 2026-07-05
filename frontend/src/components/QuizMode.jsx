@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import QuizRunner from "./QuizRunner";
 
 const LEVELS = ["All", "Beginner", "Intermediate", "Advanced"];
@@ -6,21 +6,23 @@ const LEVELS = ["All", "Beginner", "Intermediate", "Advanced"];
 export default function QuizMode({ wordPool, userId, onFinish, onRefresh }) {
   const [category, setCategory] = useState(null);
   const [difficulty, setDifficulty] = useState(null);
+  const [frozenPool, setFrozenPool] = useState(null);
 
-  const categories = useMemo(() => {
-    const set = new Set(wordPool.map((w) => w.category || "General"));
-    return ["All", ...Array.from(set).sort()];
-  }, [wordPool]);
+  const categories = [
+    "All",
+    ...Array.from(new Set(wordPool.map((w) => w.category || "General"))).sort(),
+  ];
 
-  const pool = useMemo(() => {
-    if (!category || !difficulty) return [];
-    return wordPool.filter((w) => {
+  const chooseDifficulty = (l) => {
+    setDifficulty(l);
+    const filtered = wordPool.filter((w) => {
       const catMatch =
         category === "All" || (w.category || "General") === category;
-      const diffMatch = difficulty === "All" || w.difficulty === difficulty;
+      const diffMatch = l === "All" || w.difficulty === l;
       return catMatch && diffMatch;
     });
-  }, [category, difficulty, wordPool]);
+    setFrozenPool(filtered); // snapshot taken once, won't change during the quiz
+  };
 
   if (!category) {
     return (
@@ -73,7 +75,7 @@ export default function QuizMode({ wordPool, userId, onFinish, onRefresh }) {
               <button
                 key={l}
                 className="level-chip"
-                onClick={() => setDifficulty(l)}
+                onClick={() => chooseDifficulty(l)}
               >
                 {l}
               </button>
@@ -89,7 +91,7 @@ export default function QuizMode({ wordPool, userId, onFinish, onRefresh }) {
 
   return (
     <QuizRunner
-      pool={pool}
+      pool={frozenPool || []}
       label={`${category} · ${difficulty}`}
       userId={userId}
       onFinish={onFinish}
