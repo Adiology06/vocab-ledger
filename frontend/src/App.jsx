@@ -345,11 +345,11 @@ function App() {
         <span>
           Built by{" "}
           <a
-            href="https://your-portfolio-url.com"
+            href="https://portfolio-rajaditya.vercel.app/"
             target="_blank"
             rel="noopener noreferrer"
           >
-            Your Name
+            Adiology
           </a>
         </span>
       </footer>
