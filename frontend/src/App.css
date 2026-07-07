@@ -1234,3 +1234,23 @@ header {
 .footer-divider{
   opacity:0.5;
 }
+.suggestion-dropdown{
+  position:relative;
+  background:#FFFDF7;
+  border:1px solid var(--paper-line);
+  border-top:none;
+  border-radius:0 0 3px 3px;
+  box-shadow:var(--card-shadow);
+  margin-top:-8px;
+  margin-bottom:14px;
+  overflow:hidden;
+}
+.suggestion-item{
+  padding:9px 16px;
+  font-family:'Lora',serif;
+  font-size:15px;
+  cursor:pointer;
+  border-bottom:1px solid var(--paper-line);
+}
+.suggestion-item:last-child{border-bottom:none;}
+.suggestion-item:hover{background:rgba(31,92,87,0.08);color:var(--teal-deep);}

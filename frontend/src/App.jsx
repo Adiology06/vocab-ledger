@@ -9,6 +9,7 @@ import QuizMode from "./components/QuizMode";
 import { getDueWords } from "./lib/reviewService";
 import ExamQuiz from "./components/ExamQuiz";
 import ResetPassword from "./ResetPassword";
+import { fetchSuggestions } from "./lib/suggestService";
 import { printRevisionSheet } from "./lib/printService";
 import DiscoverMode from "./components/DiscoverMode";
 import { exportWordsToCSV } from "./lib/exportService";
@@ -35,6 +36,8 @@ function App() {
   const [discoverActive, setDiscoverActive] = useState(false);
   const [practiceActive, setPracticeActive] = useState(false);
   const [examQuizActive, setExamQuizActive] = useState(false);
+  const [suggestions, setSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
   const refreshSavedWords = async (uid) => {
     const words = await fetchSavedWords(uid);
@@ -72,6 +75,31 @@ function App() {
   useEffect(() => {
     if (session) getDueWords(session.user.id).then(setDueWords);
   }, [session, savedWords]);
+
+  useEffect(() => {
+    const timer = setTimeout(async () => {
+      if (!input || input.length < 2) {
+        setSuggestions([]);
+        return;
+      }
+      const results = await fetchSuggestions(input, savedWords);
+      setSuggestions(results);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [input, savedWords]);
+
+  useEffect(() => {
+    const closeDropdown = (e) => {
+      if (
+        !e.target.closest(".search-row") &&
+        !e.target.closest(".suggestion-dropdown")
+      ) {
+        setShowSuggestions(false);
+      }
+    };
+    document.addEventListener("mousedown", closeDropdown);
+    return () => document.removeEventListener("mousedown", closeDropdown);
+  }, []);
 
   const handleSearch = async (word) => {
     const target = word ?? input;
@@ -156,12 +184,42 @@ function App() {
       <div className="search-row">
         <input
           value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+          onChange={(e) => {
+            setInput(e.target.value);
+            setShowSuggestions(true);
+          }}
+          onFocus={() => setShowSuggestions(true)}
+          onKeyDown={(e) =>
+            e.key === "Enter" && (handleSearch(), setShowSuggestions(false))
+          }
           placeholder="Type an English word… e.g. resilient"
         />
-        <button onClick={() => handleSearch()}>Search</button>
+        <button
+          onClick={() => {
+            handleSearch();
+            setShowSuggestions(false);
+          }}
+        >
+          Search
+        </button>
       </div>
+      {showSuggestions && suggestions.length > 0 && (
+        <div className="suggestion-dropdown">
+          {suggestions.map((s) => (
+            <div
+              key={s}
+              className="suggestion-item"
+              onClick={() => {
+                setInput(s);
+                setShowSuggestions(false);
+                handleSearch(s);
+              }}
+            >
+              {s}
+            </div>
+          ))}
+        </div>
+      )}
       <div className="level-row">
         {["Beginner", "Intermediate", "Advanced"].map((l) => (
           <button
