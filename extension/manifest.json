@@ -1,0 +1,26 @@
+{
+  "manifest_version": 3,
+  "name": "WordJar — Look up any word",
+  "version": "1.0.0",
+  "description": "Select any word on any page and look it up in your WordJar dictionary.",
+  "permissions": ["contextMenus", "storage", "activeTab"],
+  "host_permissions": ["https://self-vocab.vercel.app/*"],
+  "background": { "service_worker": "background.js" },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["config.js", "content.js"],
+      "css": ["content.css"]
+    },
+    {
+      "matches": ["https://self-vocab.vercel.app/*"],
+      "js": ["wordjar-bridge.js"]
+    }
+  ],
+  "action": { "default_title": "WordJar" },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}

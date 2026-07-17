@@ -140,6 +140,20 @@ function App() {
     refreshSavedWords(session.user.id);
   };
 
+  useEffect(() => {
+    if (!session) return;
+    const params = new URLSearchParams(window.location.search);
+    const wordParam = params.get("word");
+    if (!wordParam) return;
+
+    const timer = setTimeout(() => {
+      handleSearch(wordParam);
+      window.history.replaceState({}, "", window.location.pathname);
+    }, 0);
+
+    return () => clearTimeout(timer);
+  }, [session]);
+
   const handleMark = async (mark) => {
     const saved = savedWords.find((w) => w.word === result.word);
     if (saved) {

@@ -1,0 +1,2 @@
+const SUPABASE_URL = "https://jculazqmtxglifhlncyl.supabase.co"
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpjdWxhenFtdHhnbGlmaGxuY3lsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI5NzYyMzEsImV4cCI6MjA5ODU1MjIzMX0.jT0UAmLDofY0IiPMQio1pwbl34FLDDRQoGE3FER-F3Q"
