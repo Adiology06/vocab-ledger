@@ -4,3 +4,4 @@ frontend/.env
 .DS_Store
 dist/
 .vscode/
+extension/config.js
